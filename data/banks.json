@@ -1,0 +1,98 @@
+[
+  {
+    "code": "ADIB",
+    "name": "Abu Dhabi Islamic Bank",
+    "shortName": "ADIB",
+    "type": "Islamic",
+    "website": "https://www.adib.ae",
+    "isDefault": true
+  },
+  {
+    "code": "DIB",
+    "name": "Dubai Islamic Bank",
+    "shortName": "DIB",
+    "type": "Islamic",
+    "website": "https://www.dib.ae",
+    "isDefault": true
+  },
+  {
+    "code": "ENBD",
+    "name": "Emirates NBD",
+    "shortName": "Emirates NBD",
+    "type": "Both",
+    "website": "https://www.emiratesnbd.com",
+    "isDefault": true
+  },
+  {
+    "code": "FAB",
+    "name": "First Abu Dhabi Bank",
+    "shortName": "FAB",
+    "type": "Both",
+    "website": "https://www.bankfab.com",
+    "isDefault": true
+  },
+  {
+    "code": "ADCB",
+    "name": "Abu Dhabi Commercial Bank",
+    "shortName": "ADCB",
+    "type": "Both",
+    "website": "https://www.adcb.com",
+    "isDefault": true
+  },
+  {
+    "code": "MASHREQ",
+    "name": "Mashreq Bank",
+    "shortName": "Mashreq",
+    "type": "Both",
+    "website": "https://www.mashreqbank.com",
+    "isDefault": false
+  },
+  {
+    "code": "RAKBANK",
+    "name": "National Bank of Ras Al Khaimah (RAKBANK)",
+    "shortName": "RAKBANK",
+    "type": "Both",
+    "website": "https://rakbank.ae",
+    "isDefault": false
+  },
+  {
+    "code": "CBD",
+    "name": "Commercial Bank of Dubai",
+    "shortName": "CBD",
+    "type": "Both",
+    "website": "https://www.cbd.ae",
+    "isDefault": false
+  },
+  {
+    "code": "SIB",
+    "name": "Sharjah Islamic Bank",
+    "shortName": "SIB",
+    "type": "Islamic",
+    "website": "https://www.sib.ae",
+    "isDefault": false
+  },
+  {
+    "code": "AJMAN",
+    "name": "Ajman Bank",
+    "shortName": "Ajman Bank",
+    "type": "Islamic",
+    "website": "https://www.ajmanbank.ae",
+    "isDefault": false
+  },
+  {
+    "code": "HSBC",
+    "name": "HSBC Middle East",
+    "shortName": "HSBC",
+    "type": "Conventional",
+    "website": "https://www.hsbc.ae",
+    "isDefault": false
+  },
+  {
+    "code": "SCB",
+    "name": "Standard Chartered UAE",
+    "shortName": "Standard Chartered",
+    "type": "Both",
+    "website": "https://www.sc.com/ae",
+    "isDefault": false
+  }
+]

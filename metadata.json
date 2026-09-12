@@ -1,0 +1,8 @@
+{
+  "name": "Home Finance Auto-Filler",
+  "description": "Multi-step bank submission form with AI-powered KYC parsing and smart PDF mapping.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
