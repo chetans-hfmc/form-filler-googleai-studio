@@ -17,12 +17,25 @@ const DATA_DIR = path.join(process.cwd(), 'data');
 const TEMPLATES_DIR = path.join(DATA_DIR, 'templates');
 const FORMS_FILE = path.join(DATA_DIR, 'forms.json');
 const BANKS_FILE = path.join(DATA_DIR, 'banks.json');
+const FORM_TEMPLATES_FILE = path.join(DATA_DIR, 'form_templates.json');
 
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 if (!fs.existsSync(TEMPLATES_DIR)) {
   fs.mkdirSync(TEMPLATES_DIR, { recursive: true });
+}
+
+export interface FormTemplateRecord {
+  id: string;
+  name: string;
+  description: string;
+  category: 'Salaried' | 'Self-Employed' | 'Executive' | 'Investor' | 'Non-Resident' | 'Joint' | 'Custom';
+  tags?: string[];
+  isBuiltIn?: boolean;
+  data: Record<string, any>;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface BankRecord {
@@ -225,6 +238,469 @@ function createStandardFormsForBank(bankCode: string, bankName: string): BankFor
 // In-memory cache synced with disk
 let banksCache: BankRecord[] = [];
 let formsCache: BankFormRecord[] = [];
+let formTemplatesCache: FormTemplateRecord[] = [];
+
+// Realistic UAE Mortgage Form Templates
+const DEFAULT_SEED_TEMPLATES: FormTemplateRecord[] = [
+  {
+    id: 'tpl_salaried_expat',
+    name: 'Salaried - Expat Professional',
+    description: 'High-earning multinational corporate employee in Dubai Marina with clean credit and auto loan. Ideal for standard prime mortgage applications.',
+    category: 'Salaried',
+    tags: ['Salaried', 'MNC', 'Expat', 'Dubai Marina', 'ADIB'],
+    isBuiltIn: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    data: {
+      educationalQualification: 'Master / Post Graduate',
+      residentOfUaeSince: '2016-03-01',
+      personalEmail: 'tariq.mansoor@gmail.com',
+      officialEmail: 't.mansoor@deloitte.com',
+      mobileNumber: '+971 50 234 5678',
+      mothersFullName: 'Fatima Mansoor',
+      maritalStatus: 'Married',
+      numberOfDependents: '2',
+      numberOfChildrenSchooling: '1',
+      firstName: 'Tariq',
+      middleName: 'Hussain',
+      lastName: 'Mansoor',
+      dob: '1986-07-14',
+      nationality: 'Pakistan',
+      gender: 'Male',
+      passportNo: 'PK9082341',
+      passportExpiry: '2031-05-20',
+      emiratesId: '784-1986-1928374-1',
+      emiratesIdExpiry: '2028-09-15',
+      hasCoApplicant: false,
+      residencePoBox: '45892',
+      residenceBuilding: 'Marina Gate Tower 2, Apt 1804',
+      residenceArea: 'Dubai Marina Walk',
+      residenceLandmark: 'Near Spinneys Marina',
+      residenceCity: 'Dubai',
+      residenceCountry: 'United Arab Emirates',
+      residenceStatus: 'Tenant',
+      residenceTelephone: '+971 4 399 1122',
+      officeCompany: 'Deloitte Middle East LLC',
+      officeEmployeesInUae: '1500+',
+      officePoBox: '9440',
+      officeBuilding: 'Emaar Square, Building 3',
+      officeUnit: 'Office 402, 4th Floor',
+      officeArea: 'Downtown Dubai',
+      officeLandmark: 'Opposite Dubai Mall Metro',
+      officeCity: 'Dubai',
+      officeCountry: 'United Arab Emirates',
+      officeStatus: 'Tenant',
+      officeTelephone: '+971 4 376 8888',
+      officeHrEmail: 'hr.me@deloitte.com',
+      officeSignatoryEmail: 'signatory.deloitte@deloitte.com',
+      prevCompany: 'KPMG Lower Gulf',
+      prevDesignation: 'Senior Audit Manager',
+      prevAddress: 'Al Fardan Office Tower, Dubai',
+      prevDoj: '2016-04-01',
+      prevDol: '2021-08-31',
+      ref1Name: 'Adnan Siddiqui',
+      ref1Mobile: '+971 55 334 1122',
+      ref1Email: 'adnan.siddiqui@gmail.com',
+      ref1Emirate: 'Dubai',
+      ref2Name: 'Rashid Al Nuaimi',
+      ref2Mobile: '+971 50 889 4433',
+      ref2Email: 'rashid.nuaimi@adcb.ae',
+      ref2Emirate: 'Abu Dhabi',
+      homePoBox: '75500',
+      homeBuilding: 'Gulberg Heights, Apt 401',
+      homeUnit: 'Flat 401',
+      homeArea: 'Clifton Block 5',
+      homeCity: 'Karachi',
+      homeState: 'Sindh',
+      homeCountry: 'Pakistan',
+      homeStatus: 'Owned',
+      homeTelephone: '+92 21 3587 9900',
+      homeRef1Name: 'Zubair Mansoor',
+      homeRef1Mobile: '+92 300 829 1122',
+      homeRef1Email: 'zubair.mansoor@yahoo.com',
+      homeRef2Name: 'Kamran Baig',
+      homeRef2Mobile: '+92 321 998 3344',
+      homeRef2Email: 'kamran.b@gmail.com',
+      carLoanBank: 'Emirates NBD',
+      carLoanOs: '38,000',
+      carLoanEmi: '1,950',
+      carLoanTerm: '20',
+      carLoanNo: 'AL-998822',
+      personalLoanBank: '',
+      personalLoanOs: '',
+      personalLoanEmi: '',
+      personalLoanTerm: '',
+      personalLoanNo: '',
+      homeLoanBank: '',
+      homeLoanOs: '',
+      homeLoanEmi: '',
+      homeLoanTerm: '',
+      homeLoanNo: '',
+      cc1Bank: 'ADCB',
+      cc1Limit: '45,000',
+      cc2Bank: 'FAB',
+      cc2Limit: '25,000',
+      propertyUsage: 'Personal Use',
+      propertyStatus: 'Finalized',
+      ownershipType: 'Single',
+      marketType: 'Secondary',
+      propertyBuilding: 'The Springs 14, Villa 32',
+      propertyArea: 'The Springs, Emirates Living',
+      propertyDeveloper: 'Emaar Properties',
+      propertyProject: 'The Springs',
+      selectedBank: 'ADIB',
+      selectedFormType: 'Islamic',
+    }
+  },
+  {
+    id: 'tpl_self_employed_owner',
+    name: 'Self-Employed - Business Owner',
+    description: 'Managing Director & Partner of a DMCC Freezone technology firm. Owned residence in JLT, existing personal facility and primary market investment property.',
+    category: 'Self-Employed',
+    tags: ['Self-Employed', 'DMCC', 'Business Owner', 'JLT', 'Investment'],
+    isBuiltIn: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    data: {
+      educationalQualification: 'Bachelor Degree',
+      residentOfUaeSince: '2012-08-15',
+      personalEmail: 'vikram.k@apextech.ae',
+      officialEmail: 'vikram@apextech.ae',
+      mobileNumber: '+971 52 876 5432',
+      mothersFullName: 'Kavita Khurana',
+      maritalStatus: 'Married',
+      numberOfDependents: '3',
+      numberOfChildrenSchooling: '2',
+      firstName: 'Vikram',
+      middleName: 'Raj',
+      lastName: 'Khurana',
+      dob: '1982-11-25',
+      nationality: 'India',
+      gender: 'Male',
+      passportNo: 'Z4928172',
+      passportExpiry: '2030-08-10',
+      emiratesId: '784-1982-8827163-1',
+      emiratesIdExpiry: '2029-04-12',
+      hasCoApplicant: false,
+      residencePoBox: '64321',
+      residenceBuilding: 'Al Seef Tower 2, Penthouse 32',
+      residenceArea: 'Cluster U, Jumeirah Lakes Towers',
+      residenceLandmark: 'Opposite DMCC Metro',
+      residenceCity: 'Dubai',
+      residenceCountry: 'United Arab Emirates',
+      residenceStatus: 'Owned',
+      residenceTelephone: '+971 4 421 9088',
+      officeCompany: 'Apex Digital Technologies FZCO',
+      officeEmployeesInUae: '32',
+      officePoBox: '34055',
+      officeBuilding: 'Silver Tower, Cluster I',
+      officeUnit: 'Office 2104, 21st Floor',
+      officeArea: 'JLT',
+      officeLandmark: 'Near Saba Tower',
+      officeCity: 'Dubai',
+      officeCountry: 'United Arab Emirates',
+      officeStatus: 'Owned',
+      officeTelephone: '+971 4 456 7890',
+      officeHrEmail: 'admin@apextech.ae',
+      officeSignatoryEmail: 'finance@apextech.ae',
+      prevCompany: 'Infosys Middle East',
+      prevDesignation: 'Regional Delivery Head',
+      prevAddress: 'Dubai Internet City, Bldg 3',
+      prevDoj: '2012-09-01',
+      prevDol: '2018-05-31',
+      ref1Name: 'Sanjay Kapoor',
+      ref1Mobile: '+971 50 445 6677',
+      ref1Email: 'sanjay.kapoor@venture.ae',
+      ref1Emirate: 'Dubai',
+      ref2Name: 'Deepak Varma',
+      ref2Mobile: '+971 55 998 1122',
+      ref2Email: 'd.varma@consulting.ae',
+      ref2Emirate: 'Dubai',
+      homePoBox: '400050',
+      homeBuilding: 'Sea Pearl Apts, Flat 702',
+      homeUnit: 'Flat 702',
+      homeArea: 'Bandra West, Hill Road',
+      homeCity: 'Mumbai',
+      homeState: 'Maharashtra',
+      homeCountry: 'India',
+      homeStatus: 'Owned',
+      homeTelephone: '+91 22 2640 5544',
+      homeRef1Name: 'Sunil Khurana',
+      homeRef1Mobile: '+91 98200 44332',
+      homeRef1Email: 'sunil.k@rediffmail.com',
+      homeRef2Name: 'Pradeep Joshi',
+      homeRef2Mobile: '+91 98190 77665',
+      homeRef2Email: 'p.joshi@gmail.com',
+      carLoanBank: 'FAB',
+      carLoanOs: '75,000',
+      carLoanEmi: '3,200',
+      carLoanTerm: '26',
+      carLoanNo: 'AL-554433',
+      personalLoanBank: 'ADCB',
+      personalLoanOs: '110,000',
+      personalLoanEmi: '4,450',
+      personalLoanTerm: '28',
+      personalLoanNo: 'PL-889900',
+      homeLoanBank: '',
+      homeLoanOs: '',
+      homeLoanEmi: '',
+      homeLoanTerm: '',
+      homeLoanNo: '',
+      cc1Bank: 'Emirates NBD',
+      cc1Limit: '60,000',
+      cc2Bank: 'Mashreq',
+      cc2Limit: '35,000',
+      propertyUsage: 'Investment',
+      propertyStatus: 'Finalized',
+      ownershipType: 'Single',
+      marketType: 'Primary',
+      propertyBuilding: 'Creek Horizon Tower 1, Apt 1405',
+      propertyArea: 'Dubai Creek Harbour',
+      propertyDeveloper: 'Emaar Properties',
+      propertyProject: 'Creek Horizon',
+      selectedBank: 'DIB',
+      selectedFormType: 'Islamic',
+    }
+  },
+  {
+    id: 'tpl_joint_couple',
+    name: 'Joint Borrowers - Salaried Couple',
+    description: 'Married couple applying jointly with primary borrower in Emirates Aviation and co-applicant spouse in Dubai Healthcare, pooling income for maximum loan affordability.',
+    category: 'Joint',
+    tags: ['Joint', 'Co-Applicant', 'Dual Income', 'Emirates', 'Healthcare'],
+    isBuiltIn: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    data: {
+      educationalQualification: 'Bachelor Degree',
+      residentOfUaeSince: '2015-06-10',
+      personalEmail: 'carlos.mendoza@gmail.com',
+      officialEmail: 'carlos.mendoza@emirates.com',
+      mobileNumber: '+971 56 123 7890',
+      mothersFullName: 'Maria Elena Mendoza',
+      maritalStatus: 'Married',
+      numberOfDependents: '1',
+      numberOfChildrenSchooling: '1',
+      firstName: 'Carlos',
+      middleName: 'Eduardo',
+      lastName: 'Mendoza',
+      dob: '1984-03-22',
+      nationality: 'Spain',
+      gender: 'Male',
+      passportNo: 'ES8829103',
+      passportExpiry: '2032-11-15',
+      emiratesId: '784-1984-6638291-1',
+      emiratesIdExpiry: '2028-10-30',
+      hasCoApplicant: true,
+      coAppFirstName: 'Elena',
+      coAppMiddleName: 'Sofia',
+      coAppLastName: 'Mendoza',
+      coAppDob: '1987-09-18',
+      coAppNationality: 'Spain',
+      coAppGender: 'Female',
+      coAppPassportNo: 'ES9938201',
+      coAppPassportExpiry: '2033-04-20',
+      coAppEmiratesId: '784-1987-5544332-2',
+      coAppEmiratesIdExpiry: '2028-10-30',
+      coAppEducationalQualification: 'Master / Post Graduate',
+      coAppResidentOfUaeSince: '2015-06-10',
+      coAppPersonalEmail: 'elena.mendoza@gmail.com',
+      coAppOfficialEmail: 'elena.m@mediclinic.ae',
+      coAppMobileNumber: '+971 56 987 6543',
+      coAppMothersFullName: 'Carmen Rodriguez',
+      coAppMaritalStatus: 'Married',
+      coAppNumberOfDependents: '0',
+      residencePoBox: '33201',
+      residenceBuilding: 'Downtown Views II, Tower 2, Apt 2201',
+      residenceArea: 'Downtown Dubai',
+      residenceLandmark: 'Adjacent to Dubai Mall Zabeel',
+      residenceCity: 'Dubai',
+      residenceCountry: 'United Arab Emirates',
+      residenceStatus: 'Tenant',
+      residenceTelephone: '+971 4 332 5544',
+      officeCompany: 'Emirates Airlines Group',
+      officeEmployeesInUae: '25000+',
+      officePoBox: '686',
+      officeBuilding: 'Emirates Group Headquarters',
+      officeUnit: 'Flight Operations, Block B',
+      officeArea: 'Airport Road, Garhoud',
+      officeLandmark: 'Opposite Terminal 3',
+      officeCity: 'Dubai',
+      officeCountry: 'United Arab Emirates',
+      officeStatus: 'Owned',
+      officeTelephone: '+971 4 286 4444',
+      officeHrEmail: 'hr.recruitment@emirates.com',
+      officeSignatoryEmail: 'salary.admin@emirates.com',
+      prevCompany: 'Iberia Airlines',
+      prevDesignation: 'First Officer',
+      prevAddress: 'Barajas Airport, Madrid',
+      prevDoj: '2010-01-15',
+      prevDol: '2015-05-30',
+      ref1Name: 'Captain David Miller',
+      ref1Mobile: '+971 50 223 9988',
+      ref1Email: 'david.miller@emirates.com',
+      ref1Emirate: 'Dubai',
+      ref2Name: 'Dr. Sarah Jenkins',
+      ref2Mobile: '+971 55 443 2211',
+      ref2Email: 's.jenkins@mediclinic.ae',
+      ref2Emirate: 'Dubai',
+      homePoBox: '28001',
+      homeBuilding: 'Calle de Serrano 45',
+      homeUnit: 'Piso 3-B',
+      homeArea: 'Barrio de Salamanca',
+      homeCity: 'Madrid',
+      homeState: 'Comunidad de Madrid',
+      homeCountry: 'Spain',
+      homeStatus: 'Owned',
+      homeTelephone: '+34 91 556 7890',
+      homeRef1Name: 'Javier Mendoza',
+      homeRef1Mobile: '+34 610 223 344',
+      homeRef1Email: 'javier.m@telefonica.es',
+      homeRef2Name: 'Lucia Gomez',
+      homeRef2Mobile: '+34 622 998 877',
+      homeRef2Email: 'lucia.g@gmail.com',
+      carLoanBank: '',
+      carLoanOs: '',
+      carLoanEmi: '',
+      carLoanTerm: '',
+      carLoanNo: '',
+      personalLoanBank: '',
+      personalLoanOs: '',
+      personalLoanEmi: '',
+      personalLoanTerm: '',
+      personalLoanNo: '',
+      homeLoanBank: '',
+      homeLoanOs: '',
+      homeLoanEmi: '',
+      homeLoanTerm: '',
+      homeLoanNo: '',
+      cc1Bank: 'Citi UAE',
+      cc1Limit: '50,000',
+      cc2Bank: 'HSBC UAE',
+      cc2Limit: '30,000',
+      propertyUsage: 'Personal Use',
+      propertyStatus: 'Finalized',
+      ownershipType: 'Joint',
+      marketType: 'Secondary',
+      propertyBuilding: 'Arabian Ranches 2, Camelia Villa 45',
+      propertyArea: 'Arabian Ranches, Dubai',
+      propertyDeveloper: 'Emaar Properties',
+      propertyProject: 'Camelia Villas',
+      selectedBank: 'ENBD',
+      selectedFormType: 'Non-Islamic',
+    }
+  },
+  {
+    id: 'tpl_non_resident_investor',
+    name: 'Non-Resident - International Investor',
+    description: 'International overseas investor purchasing prime freehold off-plan residential unit. Clean zero UAE debt profile with international residence.',
+    category: 'Non-Resident',
+    tags: ['Non-Resident', 'Overseas', 'Investor', 'Off-Plan', 'Emaar'],
+    isBuiltIn: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    data: {
+      educationalQualification: 'Post Graduate / MBA',
+      residentOfUaeSince: '',
+      personalEmail: 'alexander.schmidt@investor-berlin.de',
+      officialEmail: 'a.schmidt@schmidt-holdings.de',
+      mobileNumber: '+49 171 2345678',
+      mothersFullName: 'Greta Schmidt',
+      maritalStatus: 'Married',
+      numberOfDependents: '2',
+      numberOfChildrenSchooling: '2',
+      firstName: 'Alexander',
+      middleName: 'Wilhelm',
+      lastName: 'Schmidt',
+      dob: '1979-05-12',
+      nationality: 'Germany',
+      gender: 'Male',
+      passportNo: 'C11223344',
+      passportExpiry: '2033-02-10',
+      emiratesId: '',
+      emiratesIdExpiry: '',
+      hasCoApplicant: false,
+      residencePoBox: '10117',
+      residenceBuilding: 'Unter den Linden 42',
+      residenceArea: 'Mitte',
+      residenceLandmark: 'Near Brandenburg Gate',
+      residenceCity: 'Berlin',
+      residenceCountry: 'Germany',
+      residenceStatus: 'Owned',
+      residenceTelephone: '+49 30 2094 5000',
+      officeCompany: 'Schmidt Vermögensverwaltung GmbH',
+      officeEmployeesInUae: '0',
+      officePoBox: '10117',
+      officeBuilding: 'Friedrichstraße 90',
+      officeUnit: 'Suite 500',
+      officeArea: 'Mitte',
+      officeLandmark: 'Friedrichstraße Station',
+      officeCity: 'Berlin',
+      officeCountry: 'Germany',
+      officeStatus: 'Owned',
+      officeTelephone: '+49 30 8899 1000',
+      officeHrEmail: 'office@schmidt-holdings.de',
+      officeSignatoryEmail: 'directors@schmidt-holdings.de',
+      prevCompany: 'Siemens AG',
+      prevDesignation: 'Executive Vice President',
+      prevAddress: 'Munich, Germany',
+      prevDoj: '2005-01-01',
+      prevDol: '2019-12-31',
+      ref1Name: 'Wolfgang Becker',
+      ref1Mobile: '+49 170 9988776',
+      ref1Email: 'w.becker@berlin-capital.de',
+      ref1Emirate: 'Dubai',
+      ref2Name: 'Maximilian Weber',
+      ref2Mobile: '+49 172 5544332',
+      ref2Email: 'max.weber@weber-law.de',
+      ref2Emirate: 'Dubai',
+      homePoBox: '10117',
+      homeBuilding: 'Unter den Linden 42',
+      homeUnit: 'Penthouse',
+      homeArea: 'Mitte',
+      homeCity: 'Berlin',
+      homeState: 'Berlin',
+      homeCountry: 'Germany',
+      homeStatus: 'Owned',
+      homeTelephone: '+49 30 2094 5000',
+      homeRef1Name: 'Klaus Schmidt',
+      homeRef1Mobile: '+49 171 8877665',
+      homeRef1Email: 'klaus.schmidt@t-online.de',
+      homeRef2Name: 'Dieter Fischer',
+      homeRef2Mobile: '+49 170 3322110',
+      homeRef2Email: 'd.fischer@fischer-gmbh.de',
+      carLoanBank: '',
+      carLoanOs: '',
+      carLoanEmi: '',
+      carLoanTerm: '',
+      carLoanNo: '',
+      personalLoanBank: '',
+      personalLoanOs: '',
+      personalLoanEmi: '',
+      personalLoanTerm: '',
+      personalLoanNo: '',
+      homeLoanBank: '',
+      homeLoanOs: '',
+      homeLoanEmi: '',
+      homeLoanTerm: '',
+      homeLoanNo: '',
+      cc1Bank: '',
+      cc1Limit: '',
+      cc2Bank: '',
+      cc2Limit: '',
+      propertyUsage: 'Investment',
+      propertyStatus: 'Finalized',
+      ownershipType: 'Single',
+      marketType: 'Primary',
+      propertyBuilding: 'Burj Crown, Unit 1904',
+      propertyArea: 'Downtown Dubai',
+      propertyDeveloper: 'Emaar Properties',
+      propertyProject: 'Burj Crown',
+      selectedBank: 'FAB',
+      selectedFormType: 'Non-Islamic',
+    }
+  }
+];
 
 function loadBanksFromDisk(): BankRecord[] {
   try {
@@ -295,9 +771,38 @@ function saveFormsToDisk(forms: BankFormRecord[]) {
   }
 }
 
+// Load form templates from disk or initial seed
+function loadFormTemplatesFromDisk(): FormTemplateRecord[] {
+  try {
+    if (fs.existsSync(FORM_TEMPLATES_FILE)) {
+      const data = fs.readFileSync(FORM_TEMPLATES_FILE, 'utf-8');
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.error('Error reading form templates from disk:', e);
+  }
+
+  const initial = [...DEFAULT_SEED_TEMPLATES];
+  saveFormTemplatesToDisk(initial);
+  return initial;
+}
+
+function saveFormTemplatesToDisk(templates: FormTemplateRecord[]) {
+  try {
+    fs.writeFileSync(FORM_TEMPLATES_FILE, JSON.stringify(templates, null, 2), 'utf-8');
+    formTemplatesCache = templates;
+  } catch (e) {
+    console.error('Error saving form templates to disk:', e);
+  }
+}
+
 // Initialize cache
 banksCache = loadBanksFromDisk();
 formsCache = loadFormsFromDisk();
+formTemplatesCache = loadFormTemplatesFromDisk();
 
 // Template PDF buffer helper
 function getTemplateBuffer(formId: string): Buffer | null {
@@ -860,6 +1365,239 @@ Respond with ONLY a raw valid JSON object mapping PDF field names to standard fi
     } catch (err: any) {
       console.error('Delete bank error:', err);
       res.status(500).json({ error: err.message || 'Failed to delete bank' });
+    }
+  });
+
+  // ==========================================
+  // FORM TEMPLATES CRUD API
+  // ==========================================
+
+  // 1. GET /api/form-templates - List all templates with optional category/search filters
+  app.get('/api/form-templates', (req, res) => {
+    try {
+      const { category, search } = req.query as { category?: string; search?: string };
+      let list = [...formTemplatesCache];
+
+      if (category && category !== 'All') {
+        list = list.filter(t => t.category.toLowerCase() === category.toLowerCase());
+      }
+
+      if (search && search.trim()) {
+        const q = search.trim().toLowerCase();
+        list = list.filter(t =>
+          t.name.toLowerCase().includes(q) ||
+          t.description?.toLowerCase().includes(q) ||
+          (t.tags && t.tags.some(tag => tag.toLowerCase().includes(q)))
+        );
+      }
+
+      res.json({ templates: list });
+    } catch (err: any) {
+      console.error('List templates error:', err);
+      res.status(500).json({ error: err.message || 'Failed to list templates' });
+    }
+  });
+
+  // 2. GET /api/form-templates/:id - Get single template
+  app.get('/api/form-templates/:id', (req, res) => {
+    const template = formTemplatesCache.find(t => t.id === req.params.id);
+    if (!template) {
+      return res.status(404).json({ error: `Template with ID "${req.params.id}" not found` });
+    }
+    res.json({ template });
+  });
+
+  // 3. POST /api/form-templates - Save current form snapshot as new template
+  app.post('/api/form-templates', (req, res) => {
+    try {
+      const { name, description, category, tags, data } = req.body;
+
+      if (!name || !name.trim()) {
+        return res.status(400).json({ error: 'Template name is required' });
+      }
+
+      if (!data || typeof data !== 'object') {
+        return res.status(400).json({ error: 'Form data payload is required' });
+      }
+
+      const id = `tpl_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+      const cleanName = name.trim();
+      const cleanCategory = category || 'Custom';
+      const cleanTags = Array.isArray(tags)
+        ? tags.map(t => String(t).trim()).filter(Boolean)
+        : typeof tags === 'string'
+          ? tags.split(',').map(t => t.trim()).filter(Boolean)
+          : [];
+
+      const newTemplate: FormTemplateRecord = {
+        id,
+        name: cleanName,
+        description: description ? description.trim() : '',
+        category: cleanCategory,
+        tags: cleanTags,
+        isBuiltIn: false,
+        data,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      formTemplatesCache.unshift(newTemplate);
+      saveFormTemplatesToDisk(formTemplatesCache);
+
+      res.status(201).json({
+        success: true,
+        template: newTemplate,
+        message: `Template "${cleanName}" saved successfully.`,
+      });
+    } catch (err: any) {
+      console.error('Create template error:', err);
+      res.status(500).json({ error: err.message || 'Failed to create template' });
+    }
+  });
+
+  // 4. PUT /api/form-templates/:id - Update existing template metadata or snapshot data
+  app.put('/api/form-templates/:id', (req, res) => {
+    try {
+      const targetId = req.params.id;
+      const index = formTemplatesCache.findIndex(t => t.id === targetId);
+
+      if (index === -1) {
+        return res.status(404).json({ error: `Template "${targetId}" not found` });
+      }
+
+      const { name, description, category, tags, data } = req.body;
+      const current = formTemplatesCache[index];
+
+      const cleanTags = tags !== undefined
+        ? Array.isArray(tags)
+          ? tags.map(t => String(t).trim()).filter(Boolean)
+          : typeof tags === 'string'
+            ? tags.split(',').map(t => t.trim()).filter(Boolean)
+            : current.tags
+        : current.tags;
+
+      const updatedTemplate: FormTemplateRecord = {
+        ...current,
+        name: name !== undefined ? name.trim() : current.name,
+        description: description !== undefined ? description.trim() : current.description,
+        category: category !== undefined ? category : current.category,
+        tags: cleanTags,
+        data: data !== undefined && typeof data === 'object' ? data : current.data,
+        updatedAt: new Date().toISOString(),
+      };
+
+      formTemplatesCache[index] = updatedTemplate;
+      saveFormTemplatesToDisk(formTemplatesCache);
+
+      res.json({
+        success: true,
+        template: updatedTemplate,
+        message: `Template "${updatedTemplate.name}" updated successfully.`,
+      });
+    } catch (err: any) {
+      console.error('Update template error:', err);
+      res.status(500).json({ error: err.message || 'Failed to update template' });
+    }
+  });
+
+  // 5. DELETE /api/form-templates/:id - Delete a template
+  app.delete('/api/form-templates/:id', (req, res) => {
+    try {
+      const targetId = req.params.id;
+      const index = formTemplatesCache.findIndex(t => t.id === targetId);
+
+      if (index === -1) {
+        return res.status(404).json({ error: `Template "${targetId}" not found` });
+      }
+
+      const deleted = formTemplatesCache[index];
+      formTemplatesCache.splice(index, 1);
+      saveFormTemplatesToDisk(formTemplatesCache);
+
+      res.json({
+        success: true,
+        message: `Template "${deleted.name}" deleted successfully.`,
+      });
+    } catch (err: any) {
+      console.error('Delete template error:', err);
+      res.status(500).json({ error: err.message || 'Failed to delete template' });
+    }
+  });
+
+  // 6. POST /api/form-templates/reset-defaults - Restore factory seed templates
+  app.post('/api/form-templates/reset-defaults', (req, res) => {
+    try {
+      // Keep any user created custom templates or reset completely
+      const { preserveCustom } = req.body;
+      let newTemplates: FormTemplateRecord[];
+
+      if (preserveCustom) {
+        const customOnly = formTemplatesCache.filter(t => !t.isBuiltIn);
+        newTemplates = [...DEFAULT_SEED_TEMPLATES, ...customOnly];
+      } else {
+        newTemplates = [...DEFAULT_SEED_TEMPLATES];
+      }
+
+      formTemplatesCache = newTemplates;
+      saveFormTemplatesToDisk(formTemplatesCache);
+
+      res.json({
+        success: true,
+        templates: formTemplatesCache,
+        message: 'Successfully reset default form templates.',
+      });
+    } catch (err: any) {
+      console.error('Reset default templates error:', err);
+      res.status(500).json({ error: err.message || 'Failed to reset templates' });
+    }
+  });
+
+  // 7. POST /api/form-templates/import - Import templates batch
+  app.post('/api/form-templates/import', (req, res) => {
+    try {
+      const { templates } = req.body;
+      if (!Array.isArray(templates) || templates.length === 0) {
+        return res.status(400).json({ error: 'Valid array of templates is required' });
+      }
+
+      let importedCount = 0;
+      for (const t of templates) {
+        if (t.name && t.data) {
+          const id = t.id || `tpl_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+          // Replace if exists, or push
+          const existingIdx = formTemplatesCache.findIndex(item => item.id === id);
+          const record: FormTemplateRecord = {
+            id,
+            name: String(t.name).trim(),
+            description: t.description ? String(t.description).trim() : '',
+            category: t.category || 'Custom',
+            tags: Array.isArray(t.tags) ? t.tags : [],
+            isBuiltIn: Boolean(t.isBuiltIn),
+            data: t.data,
+            createdAt: t.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+
+          if (existingIdx !== -1) {
+            formTemplatesCache[existingIdx] = record;
+          } else {
+            formTemplatesCache.push(record);
+          }
+          importedCount++;
+        }
+      }
+
+      saveFormTemplatesToDisk(formTemplatesCache);
+
+      res.json({
+        success: true,
+        importedCount,
+        templates: formTemplatesCache,
+        message: `Successfully imported ${importedCount} templates.`,
+      });
+    } catch (err: any) {
+      console.error('Import templates error:', err);
+      res.status(500).json({ error: err.message || 'Failed to import templates' });
     }
   });
 

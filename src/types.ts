@@ -180,4 +180,25 @@ export interface BankFormItem {
   updatedAt: string;
 }
 
+export type FormTemplateCategory = 
+  | 'Salaried' 
+  | 'Self-Employed' 
+  | 'Executive' 
+  | 'Investor' 
+  | 'Non-Resident' 
+  | 'Joint' 
+  | 'Custom';
+
+export interface FormTemplateRecord {
+  id: string;
+  name: string;
+  description: string;
+  category: FormTemplateCategory;
+  tags?: string[];
+  isBuiltIn?: boolean;
+  data: Partial<FormData>;
+  createdAt: string;
+  updatedAt: string;
+}
+
 
